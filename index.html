@@ -3,13 +3,28 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>ES6 Boilerplate</title>
+    <style>
+        html,body {
+           overscroll-behavior-x: none;
+        }
+        html,body{
+            margin: 0;
+            padding: 0;
+            background: black;
+            overflow: hidden;
+        }
+        .el{
+            position: absolute;
+            background-position: center;
+            background-size: contain;
+            width: 50vw;
+            height: 50vh;
+            background-repeat: no-repeat;
+        }
+    </style>
 </head>
 <body>
-    <h1>ES6 Boilerplate</h1>
-    <p>Check console for details</p>
     <div id="main"></div>
-
     <script type="text/javascript" src="dist/bundle.js"></script>
 </body>
 </html>
