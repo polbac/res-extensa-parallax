@@ -1,4 +1,4 @@
-import { IMAGE } from './type'
+import { IMAGE, IFRAME } from './type'
 
 export default {
  artwork: [
@@ -10,7 +10,8 @@ export default {
     {
         id: 2,
         thumbnail: 'dist/img/2.jpg',
-        type: IMAGE,
+        type: IFRAME,
+        src: 'http://wwwwwwwww.jodi.org/',
     },
     {
         id: 3,

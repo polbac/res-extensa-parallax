@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
-import { IMAGE } from './type'
+import { IMAGE, IFRAME } from './type'
 import { VerticalDirection, HorizontalDirection } from './navigation'
 import Viewport from './Viewport'
 
@@ -167,20 +167,27 @@ export default class Render{
 
 class DomElement{
     create(artwork) {
-        const div = document.createElement("div")
+        let el
         const uuid = uuidv4()
         this.uuid = uuid
 
         switch(artwork.config.type) {
             case IMAGE :
-                div.classList.add('el')
-                div.classList.add(`el-${uuid}`)
-                div.classList.add('type-image')
-                div.style.backgroundImage = `url(${artwork.config.thumbnail})`
+                el = document.createElement("div")
+                el.classList.add('type-image')
+                el.style.backgroundImage = `url(${artwork.config.thumbnail})`
+                break
+            case IFRAME:
+                el = document.createElement("iframe")
+                el.classList.add('type-iframe')
+                el.src = artwork.config.src
                 break
         }
 
-        return div
+        el.classList.add('el')
+        el.classList.add(`el-${uuid}`)
+
+        return el
     }
 
     getEl() {
