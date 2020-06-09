@@ -20,20 +20,20 @@ export class Control {
         this.horizontalDirection = null
 
         mouseWheel((x, y) => {
-            if (this.lastX < x) {
+            if (this.lastX > x) {
                 this.horizontalDirection = HorizontalDirection.LEFT
             }
 
-            if (this.lastX > x) {
+            if (this.lastX < x) {
                 this.horizontalDirection = HorizontalDirection.RIGHT
             }
 
-            if (this.lastY < y) {
-                this.verticalDirection = HorizontalDirection.TOP
+            if (this.lastY > y) {
+                this.verticalDirection = VerticalDirection.TOP
             }
 
-            if (this.lastY > y) {
-                this.verticalDirection = HorizontalDirection.BOTTOM
+            if (this.lastY < y) {
+                this.verticalDirection = VerticalDirection.BOTTOM
             }
 
             this.lastX = x
@@ -42,8 +42,8 @@ export class Control {
             global.eventEmitter.emit(MOVE, { 
                 horizontalDirection: this.horizontalDirection,
                 verticalDirection: this.verticalDirection,
-                x,
-                y,
+                x: -x,
+                y: -y,
             })
         })
     }

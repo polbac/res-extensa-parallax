@@ -14,6 +14,6 @@ const control = new Control()
 render.addToDom()
 render.firstRender()
 
-global.eventEmitter.on(MOVE, ({ x, y }) => render.move({ x, y }))
+global.eventEmitter.on(MOVE, (coor) => render.move(coor))
 
 setInterval(render.render.bind(render), 50)

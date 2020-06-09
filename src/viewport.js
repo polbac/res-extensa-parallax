@@ -1,5 +1,4 @@
 export default class Viewport {
-    
     getSize() {
         const win = window,
             doc = document,
@@ -12,9 +11,5 @@ export default class Viewport {
             width,
             height,
         }
-    }
-
-    esBodyOnViewport(el) {
-
     }
 }
