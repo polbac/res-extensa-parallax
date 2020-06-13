@@ -1,6 +1,7 @@
 import { IMAGE, IFRAME } from './type'
 
 export default {
+ api: 'https://vertice-platform.cdn.prismic.io/api/graphql',
  artwork: [
     {
         id: 1,

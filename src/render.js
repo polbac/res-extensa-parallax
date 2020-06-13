@@ -181,6 +181,7 @@ class DomElement{
                 el = document.createElement("iframe")
                 el.classList.add('type-iframe')
                 el.src = artwork.config.src
+                el.scrolling = 'no'
                 break
         }
 
