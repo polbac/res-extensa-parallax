@@ -1,97 +1,111 @@
 import { v4 as uuidv4 } from 'uuid'
-import { IMAGE, IFRAME } from './type'
 import { VerticalDirection, HorizontalDirection } from './navigation'
 import Viewport from './Viewport'
-
+import { arrayToMatrix } from './utils'
+import GridBlock from './grid-block'
 const viewport = new Viewport()
+const GRID_ELEMENTS = 4
 
 export default class Render{
     constructor(artworkList) {
+        this.grid = []
+        this.matrix = []
         this.artworkList = artworkList
+        this.target = document.getElementById("main")
+        this.matrix = arrayToMatrix(this.artworkList)
+        this.blocks = []
     }
     
     addToDom() {
-        const target = document.getElementById("main")
-        this.artworkList = this.artworkList.map(artwork => {
-            const element = new DomElement()
-            target.appendChild(element.create(artwork))
-            return element
-        })
+        for (let index = 0; index < GRID_ELEMENTS; index++) {
+            const gridElement = document.createElement("div")
+                const uuid = uuidv4()
+                gridElement.classList.add('grid-el')
+                gridElement.classList.add(`grid-el-${uuid}`)
+                this.target.append(gridElement)
+                this.blocks.push(new GridBlock(this.matrix, gridElement))
+        }
     }
 
-    getWidth() {
-        return window.innerWidth *.9;
+    getBlockWidth() {
+        return this.blocks[0].getWidth()
     }
 
-    getHeight() {
-        return window.innerHeight *.9;
+    getBlockHeight() {
+        return this.blocks[0].getHeight()
     }
 
-    firstRender() {
-        let x = -this.getWidth()
-        let y = -this.getHeight()
+    firstRender() {
+        const width = this.getBlockWidth()
+        const height = this.getBlockHeight()
         
-        this.artworkList.forEach(artwork => {
-            artwork.x = x
-            artwork.y = y
-            x += this.getWidth()
-            if (x > this.getWidth() * 2) {
-                x = 0
-                y += this.getHeight()
-            }
-        })
+        this.blocks[0].x = 0
+        this.blocks[0].y = 0
+
+        this.blocks[1].x = width
+        this.blocks[1].y = 0
+
+        this.blocks[2].x = 0
+        this.blocks[2].y = height
+
+        this.blocks[3].x = width
+        this.blocks[3].y = height
+
     }
 
     move({ x, y, verticalDirection, horizontalDirection }) {
-        this.artworkList.forEach(artwork => {
-            artwork.x += x
-            artwork.y += y
+        this.blocks.forEach(block => {
+            const speed = 0.5
+            block.move(x * speed, y * speed)
         })
         
-        this.assertChangePositions({ verticalDirection, horizontalDirection })
+        this.assertMoveBlocks({ verticalDirection, horizontalDirection })
     }
 
     getTotalArea() {
         const area = { 
-            x1: this.artworkList[0].x,
-            y1: this.artworkList[0].y,
-            x2: this.artworkList[0].x,
-            y2: this.artworkList[0].y,
+            x1: this.blocks[0].x,
+            y1: this.blocks[0].y,
+            x2: this.blocks[0].x,
+            y2: this.blocks[0].y,
         }
 
-        this.artworkList.forEach(artwork => {
-            if (artwork.x < area.x1) area.x1 = artwork.x
-            if (artwork.y < area.y1) area.y1 = artwork.y
-            if (artwork.x + this.getWidth() > area.x2) area.x2 = artwork.x + this.getWidth()
-            if (artwork.y + this.getHeight() > area.y2) area.y2 = artwork.y + this.getHeight()
+        this.blocks.forEach(block => {
+            if (block.x < area.x1) area.x1 = block.x
+            if (block.y < area.y1) area.y1 = block.y
+            if (block.x + this.getBlockWidth() > area.x2) area.x2 = block.x + this.getBlockWidth()
+            if (block.y + this.getBlockHeight() > area.y2) area.y2 = block.y + this.getBlockHeight()
         })
-
         return area
+    }
+
+    render() {
+        this.blocks.forEach(block => block.render())
     }
 
     getTopRow() {
         const area = this.getTotalArea()
-        return this.artworkList
-            .filter(artwork => artwork.y === area.y1)
+        return this.blocks
+            .filter(block => block.y === area.y1)
 
     }
 
     getBottomRow() {
         const area = this.getTotalArea()
-        return this.artworkList
-            .filter(artwork => artwork.y + this.getHeight() === area.y2)
+        return this.blocks
+            .filter(block => block.y + this.getBlockHeight() === area.y2)
     }
 
     getLeftColumn() {
         const area = this.getTotalArea()
-        return this.artworkList
-            .filter(artwork => artwork.x === area.x1)
+        return this.blocks
+            .filter(block => block.x === area.x1)
     }
 
     getRightColumn() {
         const area = this.getTotalArea()
-        return this.artworkList
-            .filter(artwork => artwork.x + this.getWidth() === area.x2)
+        return this.blocks
+            .filter(block => block.x + this.getBlockWidth() === area.x2)
     }
 
     shouldFillVerticalGap(verticalDirection) {
@@ -124,7 +138,7 @@ export default class Render{
         return false
     }
 
-    assertChangePositions({ verticalDirection, horizontalDirection }) {
+    assertMoveBlocks({ verticalDirection, horizontalDirection }) {
         const area = this.getTotalArea()
 
         if (verticalDirection === VerticalDirection.TOP && this.shouldFillVerticalGap(VerticalDirection.TOP)) {
@@ -137,7 +151,8 @@ export default class Render{
         if (verticalDirection === VerticalDirection.BOTTOM && this.shouldFillVerticalGap(VerticalDirection.BOTTOM)) {
             const els = this.getBottomRow()
             els.forEach(el => {
-                el.y = area.y1 - this.getHeight()
+                el.y = area.y1 - this.getBlockHeight()
+                el.setInsidePositions()
             })
         }
 
@@ -145,53 +160,16 @@ export default class Render{
             const els = this.getLeftColumn()
             els.forEach(el => {
                 el.x = area.x2
+                el.setInsidePositions()
             })
         }
 
         if (horizontalDirection === HorizontalDirection.RIGHT && this.shouldFillHorizontalGap(HorizontalDirection.RIGHT)) {
             const els = this.getRightColumn()
             els.forEach(el => {
-                el.x = area.x1 - this.getWidth()
+                el.x = area.x1 - this.getBlockWidth()
             })
 
         }
-    }
-
-    render() {
-        this.artworkList.forEach(artwork => {
-            artwork.getEl().style.left = `${artwork.x}px`
-            artwork.getEl().style.top = `${artwork.y}px`
-        })
-    }
-}
-
-class DomElement{
-    create(artwork) {
-        let el
-        const uuid = uuidv4()
-        this.uuid = uuid
-
-        switch(artwork.config.type) {
-            case IMAGE :
-                el = document.createElement("div")
-                el.classList.add('type-image')
-                el.style.backgroundImage = `url(${artwork.config.thumbnail})`
-                break
-            case IFRAME:
-                el = document.createElement("iframe")
-                el.classList.add('type-iframe')
-                el.src = artwork.config.src
-                el.scrolling = 'no'
-                break
-        }
-
-        el.classList.add('el')
-        el.classList.add(`el-${uuid}`)
-
-        return el
-    }
-
-    getEl() {
-        return document.getElementsByClassName(`el-${this.uuid}`)[0]
     }
 }
